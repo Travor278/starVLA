@@ -24,12 +24,17 @@ def _git(root: Path, *args: str) -> str:
 
 
 def _files(path: Path) -> dict[str, str]:
+    if not path.exists():
+        raise FileNotFoundError(path)
     if path.is_file():
         return {path.name: _sha256(path)}
-    return {
+    files = {
         item.relative_to(path).as_posix(): _sha256(item)
         for item in sorted(path.rglob("*")) if item.is_file()
     }
+    if not files:
+        raise ValueError(f"No files found to hash under {path}")
+    return files
 
 
 def main() -> None:
@@ -37,6 +42,7 @@ def main() -> None:
     parser.add_argument("--evodex-root", type=Path, required=True)
     parser.add_argument("--data-view", type=Path, required=True)
     parser.add_argument("--checkpoint", type=Path)
+    parser.add_argument("--hash-data-files", action="store_true")
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
@@ -56,6 +62,13 @@ def main() -> None:
         "data_view": str(data_view),
         "data_view_manifest_sha256": _sha256(view_manifest),
         "data_source": json.loads(view_manifest.read_text(encoding="utf-8")),
+        "dataset_file_sha256": (
+            {
+                "data": _files(data_view / "data"),
+                "videos": _files(data_view / "videos"),
+            }
+            if args.hash_data_files else None
+        ),
         "checkpoint": str(checkpoint) if checkpoint else None,
         "checkpoint_file_sha256": _files(checkpoint) if checkpoint else {},
     }

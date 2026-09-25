@@ -51,6 +51,10 @@ view contains links and a provenance file. Inspect `meta/starvla_view.json`
 and the original `meta/dex_benchmark.json` before training. Training episodes
 with an `evaluation_v1` range are rejected. Keep the complete source manifest
 and any held-out evaluation episodes out of the training mixture.
+The current LeRobot extension records episode IDs and source file identities,
+but not collection reset seeds. A strict seed-level leakage audit needs that
+provenance from the benchmark data release; until then, treat it as an open
+review gate rather than assuming the splits are disjoint.
 
 ```bash
 export STARVLA_ROOT=/absolute/path/to/starVLA
@@ -117,6 +121,10 @@ python "$STARVLA_ROOT/examples/simBenchmarks/EvoDexBench/eval_files/preflight_si
 On a headless host with a local Mesa Vulkan ICD, set `VK_ICD_FILENAMES` to
 its `lvp_icd.x86_64.json` and append `--cpu-render`. This selects the
 benchmark's CPU simulation and rendering options for the diagnostic run.
+Some SAPIEN builds cannot select the Mesa renderer through `sapien.Device("cpu")`
+even when `vulkaninfo` lists `llvmpipe`. In that case use a separately verified
+rendering environment for reportable evaluation; a process-local renderer
+workaround is diagnostic only.
 
 Start the model server in the StarVLA environment. It returns already
 unnormalized physical actions. In a second terminal, activate the
@@ -165,6 +173,7 @@ Record the source and checkpoint identities alongside each run:
 python examples/simBenchmarks/EvoDexBench/record_provenance.py \
   --evodex-root "$EVODEX_ROOT" --data-view "$DATA_ROOT/evodex_single" \
   --checkpoint /absolute/path/to/new/starvla-checkpoint \
+  --hash-data-files \
   --run-id evodex-m01-eval-001 \
   --output /absolute/path/to/new/starvla-runs/eval-m01-001/provenance.json
 ```

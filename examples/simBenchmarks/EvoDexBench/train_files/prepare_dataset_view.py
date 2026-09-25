@@ -84,6 +84,9 @@ def prepare(source: Path, data_root: Path, embodiment: str) -> Path:
     episodes = lineage.get("episodes", [])
     if len(episodes) != info.get("total_episodes") or not episodes:
         raise ValueError("Episode lineage count differs from LeRobot metadata")
+    episode_ids = [str(row["episode_id"]) for row in episodes]
+    if len(set(episode_ids)) != len(episode_ids):
+        raise ValueError("Episode lineage contains duplicate IDs")
     if any(tuple(row.get("manipulator_roles", ())) != roles for row in episodes):
         raise ValueError("Episode embodiment differs from requested view")
     if any(row.get("control_hz") != 30 for row in episodes):
@@ -115,7 +118,12 @@ def prepare(source: Path, data_root: Path, embodiment: str) -> Path:
         "source_info_sha256": _sha256(info_path),
         "source_lineage_sha256": _sha256(lineage_path),
         "source_stats_sha256": _sha256(source / "meta/stats.json"),
-        "episode_ids": [str(row["episode_id"]) for row in episodes],
+        "source_conversion_manifest_sha256": (
+            _sha256(source.with_name(source.name + ".conversion_manifest.json"))
+            if source.with_name(source.name + ".conversion_manifest.json").is_file()
+            else None
+        ),
+        "episode_ids": episode_ids,
         "camera_order": list(CAMERAS[embodiment]),
         "state_dim": 31 * len(roles),
         "action_dim": 30 * len(roles),
