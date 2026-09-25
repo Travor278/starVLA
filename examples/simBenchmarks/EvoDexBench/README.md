@@ -64,6 +64,10 @@ python examples/simBenchmarks/EvoDexBench/train_files/preflight_data.py \
   --data-root "$DATA_ROOT" --embodiment single
 python examples/simBenchmarks/EvoDexBench/train_files/preflight_data.py \
   --data-root "$DATA_ROOT" --embodiment dual
+python examples/simBenchmarks/EvoDexBench/train_files/preflight_processor.py \
+  --data-root "$DATA_ROOT" --embodiment single
+python examples/simBenchmarks/EvoDexBench/train_files/preflight_processor.py \
+  --data-root "$DATA_ROOT" --embodiment dual
 ```
 
 The initial continuous-action baseline uses StarVLA QwenOFT, the same trainer
