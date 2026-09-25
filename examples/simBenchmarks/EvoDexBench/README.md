@@ -113,6 +113,7 @@ export PYTHONPATH="$STARVLA_ROOT:$EVODEX_ROOT"
 cd "$STARVLA_ROOT"
 python -m examples.simBenchmarks.EvoDexBench.eval_files.run_protocol \
   --policy starvla --task-id m01_v1 \
+  --control-mode arm_pd_ee_delta_pose_hand_pd_joint_pos --obs-mode rgb \
   --policy-kwargs '{"host":"127.0.0.1","port":10093,"embodiment":"single","execute_steps":10}' \
   --log /absolute/path/to/new/starvla-runs/eval-m01-001/episodes.jsonl
 ```
