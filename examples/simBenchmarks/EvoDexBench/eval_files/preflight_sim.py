@@ -42,7 +42,10 @@ def inspect(task_id: str, embodiment: str, seed: int, *, cpu_render: bool) -> di
         if tuple(metadata["manipulator_roles"]) != roles:
             raise ValueError("Task manipulator roles differ from the requested embodiment")
         if metadata["control_frequency_hz"] != 30:
-            raise ValueError("Task control frequency must be 30 Hz")
+            raise ValueError(
+                "Task control frequency differs from dataset 30 Hz: "
+                f"got {metadata['control_frequency_hz']} Hz"
+            )
         if not set(cameras).issubset(metadata["camera_roles"]):
             raise ValueError("Task observation lacks a required camera")
         model_input = build_model_input(observation, instruction_from_env(env))
