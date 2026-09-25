@@ -355,6 +355,30 @@ class PolicyNormProcessor:
         return self._transform
 
     # ------------------------------------------------------------------
+    # Forward path (physical env state → training-time model state)
+    # ------------------------------------------------------------------
+    def apply_state(self, physical_state: np.ndarray) -> np.ndarray:
+        """Apply the saved state transform to one ``(T, state_dim)`` array."""
+        physical_state = np.asarray(physical_state, dtype=np.float32)
+        if physical_state.ndim != 2 or not np.isfinite(physical_state).all():
+            raise ValueError("physical_state must be finite with shape (T, state_dim)")
+        data: Dict[str, torch.Tensor] = {}
+        cursor = 0
+        for full_key in self._state_keys:
+            dim = self._state_key_dims[full_key]
+            data[full_key] = torch.as_tensor(physical_state[:, cursor:cursor + dim])
+            cursor += dim
+        if cursor != physical_state.shape[-1]:
+            raise ValueError(
+                f"State keys total {cursor} dimensions, got {physical_state.shape[-1]}"
+            )
+        transformed = self._transform.apply(data)
+        return np.concatenate(
+            [np.asarray(transformed[key].detach().cpu()) for key in self._state_keys],
+            axis=-1,
+        )
+
+    # ------------------------------------------------------------------
     # Inverse path (model output → env action)
     # ------------------------------------------------------------------
     def unapply_actions(self, normalized_actions: np.ndarray) -> np.ndarray:

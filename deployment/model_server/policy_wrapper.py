@@ -162,6 +162,7 @@ class PolicyServerWrapper:
         self,
         examples: List[dict],
         unnorm_key: Optional[str] = None,
+        normalize_state: bool = False,
         **kwargs,
     ) -> Dict[str, np.ndarray]:
         """Run the framework, then un-normalize via training-time transforms.
@@ -187,6 +188,11 @@ class PolicyServerWrapper:
                 )
         proc = self._get_processor(effective_key)
 
+        if normalize_state:
+            examples = [
+                {**example, "state": proc.apply_state(np.asarray(example["state"]))}
+                for example in examples
+            ]
         out = self._framework.predict_action(examples=examples, **kwargs)
         normalized = np.asarray(out["normalized_actions"])  # (B, T, D)
 
