@@ -104,6 +104,10 @@ only a simulator diagnostic:
 
 ```bash
 export PYTHONPATH="$STARVLA_ROOT:$EVODEX_ROOT"
+python "$STARVLA_ROOT/examples/simBenchmarks/EvoDexBench/eval_files/preflight_bridge.py" \
+  --embodiment single
+python "$STARVLA_ROOT/examples/simBenchmarks/EvoDexBench/eval_files/preflight_bridge.py" \
+  --embodiment dual
 python "$STARVLA_ROOT/examples/simBenchmarks/EvoDexBench/eval_files/preflight_sim.py" \
   --task-id m01_v1 --embodiment single
 python "$STARVLA_ROOT/examples/simBenchmarks/EvoDexBench/eval_files/preflight_sim.py" \
