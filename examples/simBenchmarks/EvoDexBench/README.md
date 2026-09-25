@@ -107,6 +107,10 @@ python "$STARVLA_ROOT/examples/simBenchmarks/EvoDexBench/eval_files/preflight_si
   --task-id b11_v1 --embodiment dual
 ```
 
+On a headless host with a local Mesa Vulkan ICD, set `VK_ICD_FILENAMES` to
+its `lvp_icd.x86_64.json` and append `--cpu-render`. This selects the
+benchmark's CPU simulation and rendering options for the diagnostic run.
+
 Start the model server in the StarVLA environment. It returns already
 unnormalized physical actions. In a second terminal, activate the
 Evo-DexBench simulator environment while keeping StarVLA importable, then run

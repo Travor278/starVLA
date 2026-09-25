@@ -24,13 +24,15 @@ def _finite_tree(value: Any) -> bool:
     return bool(np.isfinite(as_finite_numpy(value, name="native_action")).all())
 
 
-def inspect(task_id: str, embodiment: str, seed: int) -> dict[str, object]:
-    env = make_task_env(
-        task_id,
-        obs_mode="rgb",
-        control_mode="arm_pd_ee_delta_pose_hand_pd_joint_pos",
-        render_mode=None,
-    )
+def inspect(task_id: str, embodiment: str, seed: int, *, cpu_render: bool) -> dict[str, object]:
+    env_kwargs: dict[str, Any] = {
+        "obs_mode": "rgb",
+        "control_mode": "arm_pd_ee_delta_pose_hand_pd_joint_pos",
+        "render_mode": None,
+    }
+    if cpu_render:
+        env_kwargs.update(sim_backend="cpu", render_backend="cpu")
+    env = make_task_env(task_id, **env_kwargs)
     try:
         observation, _ = env.reset(seed=seed)
         get_metadata = env.get_wrapper_attr("get_episode_metadata")
@@ -73,6 +75,7 @@ def inspect(task_id: str, embodiment: str, seed: int) -> dict[str, object]:
             "seed": seed,
             "camera_order": list(cameras),
             "control_hz": 30,
+            "cpu_render": cpu_render,
             "one_step_reward_finite": _finite_tree(reward),
             "terminated": bool(np.asarray(terminated).any()),
             "truncated": bool(np.asarray(truncated).any()),
@@ -87,8 +90,14 @@ def main() -> None:
     parser.add_argument("--task-id", required=True)
     parser.add_argument("--embodiment", choices=("single", "dual"), required=True)
     parser.add_argument("--seed", type=int, default=1001)
+    parser.add_argument("--cpu-render", action="store_true")
     args = parser.parse_args()
-    print(json.dumps(inspect(args.task_id, args.embodiment, args.seed), indent=2))
+    print(
+        json.dumps(
+            inspect(args.task_id, args.embodiment, args.seed, cpu_render=args.cpu_render),
+            indent=2,
+        )
+    )
 
 
 if __name__ == "__main__":
