@@ -366,7 +366,9 @@ class PolicyNormProcessor:
         cursor = 0
         for full_key in self._state_keys:
             dim = self._state_key_dims[full_key]
-            data[full_key] = np.ascontiguousarray(physical_state[:, cursor:cursor + dim])
+            data[full_key] = np.array(
+                physical_state[:, cursor:cursor + dim], dtype=np.float32, copy=True
+            )
             cursor += dim
         if cursor != physical_state.shape[-1]:
             raise ValueError(

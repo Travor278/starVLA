@@ -32,7 +32,9 @@ def inspect(data_root: Path, embodiment: str) -> dict[str, object]:
     raw_action = np.asarray(row["action"], dtype=np.float32)
     modality = modality_for(embodiment)
     state = {
-        f"state.{name}": raw_state[part["start"]:part["end"]][None, :]
+        f"state.{name}": np.array(
+            raw_state[part["start"]:part["end"]][None, :], copy=True
+        )
         for name, part in modality["state"].items()
     }
     state_flat = np.concatenate(list(state.values()), axis=-1)
