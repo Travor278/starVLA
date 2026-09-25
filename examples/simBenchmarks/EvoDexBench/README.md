@@ -95,6 +95,18 @@ preflight, never a reported score.
 
 ## Two-process evaluation
 
+Before serving a checkpoint, check one simulator reset and physical action
+encoding in the Evo-DexBench environment. This uses a neutral action and is
+only a simulator diagnostic:
+
+```bash
+export PYTHONPATH="$STARVLA_ROOT:$EVODEX_ROOT"
+python "$STARVLA_ROOT/examples/simBenchmarks/EvoDexBench/eval_files/preflight_sim.py" \
+  --task-id m01_v1 --embodiment single
+python "$STARVLA_ROOT/examples/simBenchmarks/EvoDexBench/eval_files/preflight_sim.py" \
+  --task-id b11_v1 --embodiment dual
+```
+
 Start the model server in the StarVLA environment. It returns already
 unnormalized physical actions. In a second terminal, activate the
 Evo-DexBench simulator environment while keeping StarVLA importable, then run
