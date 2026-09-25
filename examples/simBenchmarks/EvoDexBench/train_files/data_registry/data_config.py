@@ -1,5 +1,7 @@
 """LeRobot v3 registrations for Evo-DexBench physical semantic actions."""
 
+from typing import ClassVar
+
 from starVLA.dataloader.gr00t_lerobot.datasets import ModalityConfig
 from starVLA.dataloader.gr00t_lerobot.embodiment_tags import EmbodimentTag
 from starVLA.dataloader.gr00t_lerobot.transform.base import ComposedModalityTransform
@@ -11,10 +13,10 @@ from starVLA.dataloader.gr00t_lerobot.transform.state_action import (
 
 class _EvoDexConfig:
     embodiment_tag = EmbodimentTag.NEW_EMBODIMENT
-    observation_indices = [0]
-    action_indices = list(range(50))
-    roles: tuple[str, ...] = ()
-    video_keys: list[str] = []
+    observation_indices: ClassVar[list[int]] = [0]
+    action_indices: ClassVar[list[int]] = list(range(50))
+    roles: ClassVar[tuple[str, ...]] = ()
+    video_keys: ClassVar[list[str]] = []
 
     @property
     def state_keys(self) -> list[str]:
@@ -64,14 +66,14 @@ class _EvoDexConfig:
 
 class EvoDexSingleConfig(_EvoDexConfig):
     roles = ("right",)
-    video_keys = [
+    video_keys: ClassVar[list[str]] = [
         "video.context", "video.interaction", "video.wrist_right",
     ]
 
 
 class EvoDexDualConfig(_EvoDexConfig):
     roles = ("left", "right")
-    video_keys = [
+    video_keys: ClassVar[list[str]] = [
         "video.context", "video.wrist_left", "video.wrist_right",
     ]
 

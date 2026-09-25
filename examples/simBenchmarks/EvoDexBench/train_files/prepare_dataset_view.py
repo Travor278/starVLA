@@ -8,7 +8,6 @@ import json
 from pathlib import Path
 from typing import Any
 
-
 CAMERAS = {
     "single": ("context", "interaction", "wrist_right"),
     "dual": ("context", "wrist_left", "wrist_right"),

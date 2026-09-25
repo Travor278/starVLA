@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 
 
 def main() -> None:
@@ -15,8 +15,9 @@ def main() -> None:
     sys.path.insert(0, str(benchmark_path))
 
     from dex_benchmark.policies import PolicyRegistry
-    from examples.simBenchmarks.EvoDexBench.eval_files.bridge import StarVLAPolicySession
     from scripts.policies.evaluate_policy_protocol import main as evaluate_main
+
+    from examples.simBenchmarks.EvoDexBench.eval_files.bridge import StarVLAPolicySession
 
     PolicyRegistry.register("starvla", StarVLAPolicySession)
     evaluate_main()

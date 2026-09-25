@@ -7,12 +7,11 @@ from collections.abc import Mapping
 from typing import Any
 
 import numpy as np
-
-from deployment.model_server.tools.websocket_policy_client import WebsocketClientPolicy
 from dex_benchmark.integration.model_input import ModelInput
 from dex_benchmark.integration.policy_features import decode_semantic_action
 from dex_benchmark.policies.observation import compact_runtime_state, required_value
 
+from deployment.model_server.tools.websocket_policy_client import WebsocketClientPolicy
 
 ROLES = {"single": ("right",), "dual": ("left", "right")}
 CAMERAS = {

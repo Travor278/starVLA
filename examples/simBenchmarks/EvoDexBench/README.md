@@ -60,6 +60,10 @@ python examples/simBenchmarks/EvoDexBench/train_files/prepare_dataset_view.py \
 python examples/simBenchmarks/EvoDexBench/train_files/prepare_dataset_view.py \
   --source /absolute/path/to/evodex/dual-lerobot-v3 \
   --data-root "$DATA_ROOT" --embodiment dual
+python examples/simBenchmarks/EvoDexBench/train_files/preflight_data.py \
+  --data-root "$DATA_ROOT" --embodiment single
+python examples/simBenchmarks/EvoDexBench/train_files/preflight_data.py \
+  --data-root "$DATA_ROOT" --embodiment dual
 ```
 
 The initial continuous-action baseline uses StarVLA QwenOFT, the same trainer

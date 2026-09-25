@@ -27,10 +27,9 @@ from typing import Any, Dict, List, Optional, Sequence
 import numpy as np
 import torch
 
+from deployment.model_server.policy_norm_processor import PolicyNormProcessor
 from starVLA.model.framework.base_framework import baseframework, merge_config_overrides
 from starVLA.model.framework.share_tools import read_mode_config
-
-from deployment.model_server.policy_norm_processor import PolicyNormProcessor
 
 
 def _training_obs_image_size(model_cfg: Dict[str, Any]) -> Optional[List[int]]:
@@ -84,7 +83,8 @@ class PolicyServerWrapper:
             self._action_chunk_size = int(action_model_cfg["future_action_window_size"]) + 1
         else:
             raise ValueError(
-                f"PolicyServerWrapper: no action_horizon or future_action_window_size found in model config for {self._ckpt_path}"
+                "PolicyServerWrapper: no action_horizon or future_action_window_size "
+                f"found in model config for {self._ckpt_path}"
             )
         # Cache of PolicyNormProcessor instances per unnorm_key.
         # For single-dataset ckpts unnorm_key is auto-selected; for multi-dataset
