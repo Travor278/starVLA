@@ -30,7 +30,7 @@ assets. This integration does not redistribute either.
 | Raw LeRobot state | 111D | 222D |
 | Selected state | right EE pose 7 + hand qpos 24 = 31D | left then right, 62D |
 | Physical action | EE delta 6 + absolute hand qpos 24 = 30D | left then right, 60D |
-| Timing | 30 Hz, 50-action prediction chunk | 30 Hz, 50-action prediction chunk |
+| Timing | 30 Hz data/chunk; 20 Hz simulator control | 30 Hz data/chunk; 20 Hz simulator control |
 
 The dataset view slices the state without copying parquet or video. Its
 `meta/modality.json` maps the source arrays and preserves physical semantic
@@ -39,6 +39,9 @@ state order. The client requests the server's training-time state transform;
 `PolicyNormProcessor` also applies the saved action transform in reverse, so
 the returned actions are physical. Evo-DexBench's
 `encode_action` handles the simulator's native normalized controller input.
+The client samples the 50-frame chunk at 20 Hz and scales each 6D EE delta by
+`30/20`; absolute hand targets are unchanged. `execute_steps` counts simulator
+control ticks after this alignment.
 
 ## Data and training
 

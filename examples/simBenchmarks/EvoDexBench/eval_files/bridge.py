@@ -18,6 +18,20 @@ CAMERAS = {
     "single": ("context", "interaction", "wrist_right"),
     "dual": ("context", "wrist_left", "wrist_right"),
 }
+CHECKPOINT_FPS = 30
+CONTROL_HZ = 20
+CHUNK_SIZE = 50
+
+
+def aligned_action_indices() -> np.ndarray:
+    """Align 30 Hz checkpoint frames to 20 Hz simulator ticks."""
+    count = int(np.floor((CHUNK_SIZE - 1) * CONTROL_HZ / CHECKPOINT_FPS)) + 1
+    indices = np.floor(
+        np.arange(count, dtype=np.float64) * CHECKPOINT_FPS / CONTROL_HZ + 0.5
+    ).astype(np.int64)
+    if indices[0] != 0 or indices[-1] >= CHUNK_SIZE or np.any(np.diff(indices) <= 0):
+        raise ValueError("Invalid checkpoint-to-control action alignment")
+    return indices
 
 
 class StarVLAPolicySession:
@@ -35,8 +49,11 @@ class StarVLAPolicySession:
     ) -> None:
         if embodiment not in ROLES:
             raise ValueError("embodiment must be 'single' or 'dual'")
-        if not 1 <= execute_steps <= 50:
-            raise ValueError("execute_steps must be between 1 and 50")
+        self._action_indices = aligned_action_indices()
+        if not 1 <= execute_steps <= len(self._action_indices):
+            raise ValueError(
+                f"execute_steps must be between 1 and {len(self._action_indices)}"
+            )
         self.embodiment = embodiment
         self.roles = ROLES[embodiment]
         self.camera_roles = CAMERAS[embodiment]
@@ -53,7 +70,7 @@ class StarVLAPolicySession:
         expected_mix = f"evodex_{self.embodiment}_h50_q99"
         if metadata.get("training_data_mix") != expected_mix:
             raise ValueError(f"Server data mix must be {expected_mix!r}")
-        if metadata.get("action_chunk_size") != 50:
+        if metadata.get("action_chunk_size") != CHUNK_SIZE:
             raise ValueError("Server action chunk must contain 50 control ticks")
         if metadata.get("training_obs_image_size") != [224, 224]:
             raise ValueError("Server training images must be 224 x 224")
@@ -82,8 +99,8 @@ class StarVLAPolicySession:
             raise ValueError("Environment manipulator order differs from checkpoint")
         if not set(self.camera_roles).issubset(metadata.get("camera_roles", ())):
             raise ValueError("Environment lacks a required policy camera")
-        if metadata.get("control_frequency_hz") != 30:
-            raise ValueError("Environment control frequency must be 30 Hz")
+        if metadata.get("control_frequency_hz") != CONTROL_HZ:
+            raise ValueError(f"Environment control frequency must be {CONTROL_HZ} Hz")
         spec = metadata.get("benchmark_action_spec")
         if not isinstance(spec, Mapping) or spec.get("action_format") != "benchmark_physical_semantic":
             raise ValueError("Environment lacks the physical semantic action contract")
@@ -146,9 +163,15 @@ class StarVLAPolicySession:
                 "do_sample": False,
             })
             chunk = np.asarray(response["data"]["actions"], dtype=np.float32)
-            if chunk.shape != (1, 50, self.action_dim) or not np.isfinite(chunk).all():
+            if chunk.shape != (1, CHUNK_SIZE, self.action_dim) or not np.isfinite(chunk).all():
                 raise ValueError(f"Invalid physical action chunk {chunk.shape}")
-            for action in chunk[0, :self.execute_steps]:
+            aligned = chunk[0, self._action_indices].copy()
+            for role_index in range(len(self.roles)):
+                offset = role_index * 30
+                # [T, 30*roles] -> scale each role's 6D EE increment from
+                # one 30 Hz interval to one 20 Hz control interval.
+                aligned[:, offset:offset + 6] *= CHECKPOINT_FPS / CONTROL_HZ
+            for action in aligned[:self.execute_steps]:
                 self._check_physical_action(action)
                 self._actions.append(action)
         return decode_semantic_action(self._actions.popleft(), self.embodiment)

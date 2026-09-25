@@ -41,9 +41,9 @@ def inspect(task_id: str, embodiment: str, seed: int, *, cpu_render: bool) -> di
         cameras = CAMERAS[embodiment]
         if tuple(metadata["manipulator_roles"]) != roles:
             raise ValueError("Task manipulator roles differ from the requested embodiment")
-        if metadata["control_frequency_hz"] != 30:
+        if metadata["control_frequency_hz"] != 20:
             raise ValueError(
-                "Task control frequency differs from dataset 30 Hz: "
+                "Task control frequency differs from the verified 20 Hz protocol: "
                 f"got {metadata['control_frequency_hz']} Hz"
             )
         if not set(cameras).issubset(metadata["camera_roles"]):
@@ -77,7 +77,7 @@ def inspect(task_id: str, embodiment: str, seed: int, *, cpu_render: bool) -> di
             "embodiment": embodiment,
             "seed": seed,
             "camera_order": list(cameras),
-            "control_hz": 30,
+            "control_hz": 20,
             "cpu_render": cpu_render,
             "one_step_reward_finite": _finite_tree(reward),
             "terminated": bool(np.asarray(terminated).any()),
