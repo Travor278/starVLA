@@ -362,11 +362,11 @@ class PolicyNormProcessor:
         physical_state = np.asarray(physical_state, dtype=np.float32)
         if physical_state.ndim != 2 or not np.isfinite(physical_state).all():
             raise ValueError("physical_state must be finite with shape (T, state_dim)")
-        data: Dict[str, torch.Tensor] = {}
+        data: Dict[str, np.ndarray] = {}
         cursor = 0
         for full_key in self._state_keys:
             dim = self._state_key_dims[full_key]
-            data[full_key] = torch.as_tensor(physical_state[:, cursor:cursor + dim])
+            data[full_key] = np.ascontiguousarray(physical_state[:, cursor:cursor + dim])
             cursor += dim
         if cursor != physical_state.shape[-1]:
             raise ValueError(
